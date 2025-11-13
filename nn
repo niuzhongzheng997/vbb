@@ -1,0 +1,34 @@
+Hi Janardhanan, Vishnu Prasad, I'm looking into Cortex multi-cloud governance and how to optimize our provision strategy. In order to provide optimization suggestions for Aquila Autopilot. So a quick question about vendor(Cloud provider AWS & Azure) agreements :  as discussed with Jurrien, it seems that we annual commitments where we pay fixed fees for discounted rates. Does this mean we're charged the agreed amount regardless of our actual usage? Even if we don't use all the committed resources.
+ 
+No
+ 
+So our billing method for purchasing cloud service instances is the same as the usual purchasing method on the market, and there is no enterprise-level agreement, right?
+ 
+we have enterprise level agreement and discounted rates
+ 
+the costs incurred are for actual usage 
+ 
+Cortex bill would reflect the same now 
+ 
+discounted rates are fixed per annual year?
+ 
+through the contract term
+ 
+For example, the price of a Spot Instance changes in real time. Based on our enterprise level agreement and discounted rates, how should we calculate the procurement cost?
+ 
+we have a fixed cost per vcpu/ hour
+ 
+for spots
+ 
+So we can get and use this value directly durning the contract term, right ?
+ 
+Value is confidential, I am not able to provide you Julien
+ 
+Is the same true for on-demand types?
+ 
+nope
+ 
+on-demand is based on on-demand rates. we have 3 year savings plan at master account which covers the on-demand instances
+ 
+our SP coverage is 80-85% of ondemand
+ 
