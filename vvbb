@@ -1,0 +1,6 @@
+1. MONITOR USER’S INDIVIDUAL CLOUD SPENDING
+- Aquila Trail Cost calculates the user's perceived Costed Hours. 
+- Based on the hourly rate of the purchased compute instances, calculate the individual job cost for the user. 
+
+2. IDENTIFICATION OF PERFORMANCE BOTTLENECKS IN COMPUTING TASKS
+- By collecting system-level metrics (CPU, memory, disk I/O, network, etc.) from cloud optimization tools and Trail for jobs that time out, take too long, or even fail and retry multiple times during execution, the data is sent to the user for reference.- Based on the hourly rate of the purchased compute instances, calculate the individual job cost for the user. 
