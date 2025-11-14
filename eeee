@@ -68,49 +68,49 @@ c. 报告生成与反馈
 
 Of course. Here is the English translation of the performance bottleneck identification plan.
 
-### 2. Identification of Performance Bottlenecks in Computing Tasks
+ 2. Identification of Performance Bottlenecks in Computing Tasks
 
 The core of this function is to correlate business logic (task execution status) with system resource metrics for root cause analysis.
 
-#### Implementation Plan:
+ Implementation Plan:
 
-**a. Data Collection and Correlation**
+a. Data Collection and Correlation
 
-*   **Source 1: Aquila Trail (Business Status)**
-    *   **Key Data**: `Job ID`, `Task ID`, task status (`Timeout`/`Failed`/`Retried`), task queuing, start/end times, and total task duration.
+   Source 1: Aquila Trail (Business Status)
+       Key Data: `Job ID`, `Task ID`, task status (`Timeout`/`Failed`/`Retried`), task queuing, start/end times, and total task duration.
 
-*   **Source 2: Cloud Provider Native Monitoring Services (System Metrics)**
-    *   **AWS CloudWatch / Azure Monitor**: Automatically collects detailed system metrics from all EC2 instances (compute nodes):
-        *   **CPU Utilization** (`CPUUtilization`)
-        *   **Memory Utilization** (`MemUsedPercent`)
-        *   **Disk I/O** (`DiskReadBytes`, `DiskWriteBytes`, `EBSReadIOPS`, etc.)
-        *   **Network I/O** (`NetworkIn`, `NetworkOut`)
-    *   **Key Point**: Ensure all Aquila compute instances are tagged with a unified resource tag (e.g., `AquilaGrid: XVA-Batch`) for easy filtering.
+   Source 2: Cloud Provider Native Monitoring Services (System Metrics)
+       AWS CloudWatch / Azure Monitor: Automatically collects detailed system metrics from all EC2 instances (compute nodes):
+           CPU Utilization (`CPUUtilization`)
+           Memory Utilization (`MemUsedPercent`)
+           Disk I/O (`DiskReadBytes`, `DiskWriteBytes`, `EBSReadIOPS`, etc.)
+           Network I/O (`NetworkIn`, `NetworkOut`)
+       Key Point: Ensure all Aquila compute instances are tagged with a unified resource tag (e.g., `AquilaGrid: XVA-Batch`) for easy filtering.
 
-**b. Data Analysis and Correlation Engine**
+b. Data Analysis and Correlation Engine
 
-*   **Trigger Condition**: The system periodically scans the Trail, looking for tasks with a status of **"Timeout," "Abnormally Long Execution Time"** (exceeding the historical average by N standard deviations), or **"Failed/Retried."**
+   Trigger Condition: The system periodically scans the Trail, looking for tasks with a status of "Timeout," "Abnormally Long Execution Time" (exceeding the historical average by N standard deviations), or "Failed/Retried."
 
-*   **Correlation Analysis**:
-    1.  When a problematic task is identified (e.g., `Job J123`), find the **specific compute instances** (e.g., `Instance i-abc123`) that executed this task and the task's **execution time window** (e.g., `14:00 - 15:30`) from the Trail.
-    2.  Automatically query **CloudWatch** to retrieve the time-series data for system metrics (CPU, Memory, Disk I/O, Network I/O) for instance `i-abc123` during that specific time window.
+   Correlation Analysis:
+    1.  When a problematic task is identified (e.g., `Job J123`), find the specific compute instances (e.g., `Instance i-abc123`) that executed this task and the task's execution time window (e.g., `14:00 - 15:30`) from the Trail.
+    2.  Automatically query CloudWatch to retrieve the time-series data for system metrics (CPU, Memory, Disk I/O, Network I/O) for instance `i-abc123` during that specific time window.
 
-*   **Bottleneck Identification Logic**:
-    *   **CPU Bottleneck**: CPU utilization consistently exceeds 90% during task execution.
-    *   **Memory Bottleneck**: Available memory is consistently low, potentially triggering SWAP, leading to increased disk I/O and performance degradation.
-    *   **Disk I/O Bottleneck**: Disk read/write queue depth is consistently high, or throughput reaches its limit.
-    *   **Network Bottleneck**: Network throughput reaches the limit for the instance type.
-    *   **Resource Competition**: Multiple Workers running on the same instance compete for CPU, memory, or network resources.
+   Bottleneck Identification Logic:
+       CPU Bottleneck: CPU utilization consistently exceeds 90% during task execution.
+       Memory Bottleneck: Available memory is consistently low, potentially triggering SWAP, leading to increased disk I/O and performance degradation.
+       Disk I/O Bottleneck: Disk read/write queue depth is consistently high, or throughput reaches its limit.
+       Network Bottleneck: Network throughput reaches the limit for the instance type.
+       Resource Competition: Multiple Workers running on the same instance compete for CPU, memory, or network resources.
 
-**c. Report Generation and Feedback**
+c. Report Generation and Feedback
 
-*   **Automated Diagnostic Report Generation**: Generate a brief diagnostic report for each identified problematic task.
-    *   **Report Content**:
-        *   Task ID, User, Status.
-        *   **Suspected Bottleneck**: e.g., "High CPU utilization causing slow computation."
-        *   **Evidence**: Provide screenshots or data summaries of key system metrics (e.g., "Average CPU utilization during the task was 98%").
-        *   **Optimization Suggestion**: e.g., "Consider using Compute Optimized instances (e.g., C-series) instead of Memory Optimized instances (e.g., R-series)."
+   Automated Diagnostic Report Generation: Generate a brief diagnostic report for each identified problematic task.
+       Report Content:
+           Task ID, User, Status.
+           Suspected Bottleneck: e.g., "High CPU utilization causing slow computation."
+           Evidence: Provide screenshots or data summaries of key system metrics (e.g., "Average CPU utilization during the task was 98%").
+           Optimization Suggestion: e.g., "Consider using Compute Optimized instances (e.g., C-series) instead of Memory Optimized instances (e.g., R-series)."
 
-*   **User Notification**:
-    *   Automatically send this diagnostic report via **email** to the task submitter.
-    *   In the **Trail GUI**, on the task's details page, display this report using a prominent warning icon or label (e.g., **"Performance Bottleneck"**) for easy user review and querying.
+   User Notification:
+       Automatically send this diagnostic report via email to the task submitter.
+       In the Trail GUI, on the task's details page, display this report using a prominent warning icon or label (e.g., "Performance Bottleneck") for easy user review and querying.
