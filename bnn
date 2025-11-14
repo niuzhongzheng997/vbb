@@ -77,71 +77,71 @@
 
 Of course. Here is the English translation of the cost monitoring implementation plan.
 
-### Monitoring User Cloud Spending (Department/User Group Level Allocation Scheme)
+ Monitoring User Cloud Spending (Department/User Group Level Allocation Scheme)
 
-This scheme focuses on **cost allocation and trend analysis at the department or user group level**, rather than precise per-task billing. It is a more practical and achievable goal.
+This scheme focuses on cost allocation and trend analysis at the department or user group level, rather than precise per-task billing. It is a more practical and achievable goal.
 
-The core of this plan is: **Using a unified, "effective cost per core-hour" adjusted for contractual discounts, and applying it to the user's total resource consumption within a statistical period.**
+The core of this plan is: Using a unified, "effective cost per core-hour" adjusted for contractual discounts, and applying it to the user's total resource consumption within a statistical period.
 
-#### Implementation Plan:
+ Implementation Plan:
 
-**a. Data Collection Layer**
+a. Data Collection Layer
 
-1.  **Collect Total Cost (Numerator)**:
-    *   **Source**: **AWS Cost and Usage Report (CUR)** or **Cost Explorer API**. This is the most authoritative data source, as the amounts already include all enterprise discounts (Savings Plan, Spot contractual pricing, etc.).
-    *   **Operation**: Regularly (e.g., daily) pull the total cost associated with Aquila compute resources for a defined statistical period (e.g., this week/this month). The key is to accurately filter Aquila's compute costs using **resource tags** or linked accounts.
+1.  Collect Total Cost (Numerator):
+       Source: AWS Cost and Usage Report (CUR) or Cost Explorer API. This is the most authoritative data source, as the amounts already include all enterprise discounts (Savings Plan, Spot contractual pricing, etc.).
+       Operation: Regularly (e.g., daily) pull the total cost associated with Aquila compute resources for a defined statistical period (e.g., this week/this month). The key is to accurately filter Aquila's compute costs using resource tags or linked accounts.
 
-2.  **Collect Total Core-Hours (Denominator)**:
-    *   **Source**: **Aquila Trail**. Trail inherently monitors the activity of all compute instances.
-    *   **Operation**: From Trail, aggregate the **"total core running hours"** for all paid compute instances within the **same statistical period**.
-        *   `Total Core-Hours = ∑(Cores per compute instance × Paid running hours of that instance)`
+2.  Collect Total Core-Hours (Denominator):
+       Source: Aquila Trail. Trail inherently monitors the activity of all compute instances.
+       Operation: From Trail, aggregate the "total core running hours" for all paid compute instances within the same statistical period.
+           `Total Core-Hours = ∑(Cores per compute instance × Paid running hours of that instance)`
 
-**b. Calculation Layer**
+b. Calculation Layer
 
-1.  **Calculate Effective Cost Per Core-Hour**:
-    *   **Formula**: `Effective Rate = Total Aquila Cost in Period / Total Core-Hours in Period`
-    *   **Example**: If the total Aquila spend for the week is $50,000 and the total cores ran for 100,000 hours, the `Effective Rate` for that week is **$0.5/core-hour**.
-    *   **Advantage**: This rate automatically incorporates the blended average of different pricing models (Spot, On-Demand, etc.), reflecting the **true average cost** after all enterprise discounts.
+1.  Calculate Effective Cost Per Core-Hour:
+       Formula: `Effective Rate = Total Aquila Cost in Period / Total Core-Hours in Period`
+       Example: If the total Aquila spend for the week is $50,000 and the total cores ran for 100,000 hours, the `Effective Rate` for that week is $0.5/core-hour.
+       Advantage: This rate automatically incorporates the blended average of different pricing models (Spot, On-Demand, etc.), reflecting the true average cost after all enterprise discounts.
 
-2.  **Calculate User/Department Cost**:
-    *   **Data**: From Trail, obtain the **"paid instance core-hours"** consumed by tasks submitted by a **specific user** (or department) within the statistical period.
-    *   **Formula**: `User Cost = User Core-Hours × Effective Rate`
+2.  Calculate User/Department Cost:
+       Data: From Trail, obtain the "paid instance core-hours" consumed by tasks submitted by a specific user (or department) within the statistical period.
+       Formula: `User Cost = User Core-Hours × Effective Rate`
 
-#### Two Rate Selection Strategies (For Your Decision)
+ Two Rate Selection Strategies (For Your Decision)
 
 | Strategy | Pros | Cons |
 | :--- | :--- | :--- |
-| **1. Use Fixed Contract Price from Finance**<br>(e.g., Spot fixed at $0.1/core-hour) | **Extremely simple and stable**, cost is predictable, and calculations are fast. | **Less accurate**, as it does not reflect the actual mix of Savings Plan-covered On-Demand vs. Spot instances, potentially leading to allocation bias. |
-| **2. Use Calculated "Effective Rate"**<br>(As described above) | **Highly accurate** reflection of the **actual blended average price** for the period, ensuring the fairest allocation. | Requires the period to end before calculation, introducing a slight delay. |
+| 1. Use Fixed Contract Price from Finance<br>(e.g., Spot fixed at $0.1/core-hour) | Extremely simple and stable, cost is predictable, and calculations are fast. | Less accurate, as it does not reflect the actual mix of Savings Plan-covered On-Demand vs. Spot instances, potentially leading to allocation bias. |
+| 2. Use Calculated "Effective Rate"<br>(As described above) | Highly accurate reflection of the actual blended average price for the period, ensuring the fairest allocation. | Requires the period to end before calculation, introducing a slight delay. |
 
-**Recommendation**: For internal cost allocation and visibility purposes, **Strategy 2 (using the "Effective Rate") is generally the preferred choice** because it is based on actual consumption, ensures greater fairness, and equally leverages enterprise agreement pricing.
+Recommendation: For internal cost allocation and visibility purposes, Strategy 2 (using the "Effective Rate") is generally the preferred choice because it is based on actual consumption, ensures greater fairness, and equally leverages enterprise agreement pricing.
 
-**c. Presentation and Reporting Layer**
+c. Presentation and Reporting Layer
 
-*   **Trail Dashboard**:
-    *   Create a new **"Cost Overview"** dashboard.
-    *   **Display Content**:
-        *   **Total Cost** and **Total Core-Hours** for the week/month.
-        *   The current **Effective Cost per Core-Hour**.
-        *   **User/Department Cost Ranking List** (bar chart).
-        *   Support for viewing cost and resource consumption trends over a time range (e.g., last 12 months).
-*   **Regular Reports**:
-    *   Automatically generate and send reports every Monday (for the previous week) or at the start of a new month.
-    *   **Report Content Template**:
+   Trail Dashboard:
+       Create a new "Cost Overview" dashboard.
+       Display Content:
+           Total Cost and Total Core-Hours for the week/month.
+           The current Effective Cost per Core-Hour.
+           User/Department Cost Ranking List (bar chart).
+           Support for viewing cost and resource consumption trends over a time range (e.g., last 12 months).
+   Regular Reports:
+       Automatically generate and send reports every Monday (for the previous week) or at the start of a new month.
+       Report Content Template:
         ```
         To: [Department/User]
         Your Aquila resource usage for [Last Week 2023-10-23 to 2023-10-29] is as follows:
         - Core-Hours Consumed: [1,200] hours
         - Last Week's Effective Rate: [$0.5] /core-hour
-        - Your Estimated Cost: [1,200 hours * $0.5 = $600]
+        - Your Estimated Cost: [1,200 hours  $0.5 = $600]
         - Note: Your cost ranked 5th among all users.
         ```
 
-### Summary
+ Summary
 
 This adjusted scheme:
 
-1.  **Achieves the Core Objective**: Provides cost allocation and insights at the department/user level with acceptable accuracy.
-2.  **Greatly Reduces Complexity**: Eliminates the need to track precise mapping from each task to each instance, requiring only batch summary calculations at the end of the period.
-3.  **Fully Utilizes Existing Tools**: Relies on **AWS Cost Explorer** (authoritative cost) and **Aquila Trail** (authoritative usage) as the most reliable data sources.
-4.  **Delivers Business Value**: Allows users to clearly see their resource consumption scale and trends, encouraging them to spontaneously optimize usage habits, which is crucial for cloud resource governance.
+1.  Achieves the Core Objective: Provides cost allocation and insights at the department/user level with acceptable accuracy.
+2.  Greatly Reduces Complexity: Eliminates the need to track precise mapping from each task to each instance, requiring only batch summary calculations at the end of the period.
+3.  Fully Utilizes Existing Tools: Relies on AWS Cost Explorer (authoritative cost) and Aquila Trail (authoritative usage) as the most reliable data sources.
+4.  Delivers Business Value: Allows users to clearly see their resource consumption scale and trends, enc
